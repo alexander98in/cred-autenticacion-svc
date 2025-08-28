@@ -1,0 +1,17 @@
+package co.com.pragma.autenticacion.api.common;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
+public enum ErrorCode {
+
+    GENERIC("AUT-0001"),
+    VALIDATION("AUT-0002"),
+    CONFLICT("AUT-0003"),
+    NOT_FOUND("AUT-0004"),
+    PAYLOAD_INVALID("AUT-0005");
+
+    private final String code;
+}

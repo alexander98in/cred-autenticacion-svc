@@ -5,6 +5,9 @@ spring:
     name: "cred-autenticacion-svc"
   devtools:
     add-properties: false
+  jackson:
+    parser:
+      STRICT_DUPLICATE_DETECTION: true
   profiles:
     include: null
   r2dbc:
