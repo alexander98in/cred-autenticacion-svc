@@ -3,6 +3,9 @@ package co.com.pragma.autenticacion.api.exceptions;
 import co.com.pragma.autenticacion.api.common.ApiResponse;
 import co.com.pragma.autenticacion.api.common.ErrorCode;
 import co.com.pragma.autenticacion.api.common.ErrorResponse;
+import co.com.pragma.autenticacion.usecase.exceptions.BusinessRuleViolationException;
+import co.com.pragma.autenticacion.usecase.exceptions.ResourceAlreadyExistsException;
+import co.com.pragma.autenticacion.usecase.exceptions.ResourceNotFoundException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -87,6 +90,15 @@ public class ApiExceptionHandler implements ErrorWebExceptionHandler {
             code = ErrorCode.VALIDATION.getCode();
             details = ve.getErrors();
             message = (message != null) ? message : "Datos inválidos";
+        } else if (error instanceof ResourceAlreadyExistsException) {
+            status = HttpStatus.CONFLICT;
+            code = ErrorCode.CONFLICT.getCode();
+        } else if (error instanceof ResourceNotFoundException) {
+            status = HttpStatus.NOT_FOUND;
+            code = ErrorCode.NOT_FOUND.getCode();
+        } else if (error instanceof BusinessRuleViolationException) {
+            status = HttpStatus.UNPROCESSABLE_ENTITY;
+            code = ErrorCode.BUSINESS_RULE.getCode();
         } else if (error instanceof IllegalArgumentException) {
             status = HttpStatus.BAD_REQUEST;
             code = ErrorCode.VALIDATION.getCode();

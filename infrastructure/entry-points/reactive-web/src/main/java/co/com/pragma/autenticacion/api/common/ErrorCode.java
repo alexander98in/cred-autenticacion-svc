@@ -11,7 +11,8 @@ public enum ErrorCode {
     VALIDATION("AUT-0002"),
     CONFLICT("AUT-0003"),
     NOT_FOUND("AUT-0004"),
-    PAYLOAD_INVALID("AUT-0005");
+    PAYLOAD_INVALID("AUT-0005"),
+    BUSINESS_RULE("AUT-0006");
 
     private final String code;
 }
