@@ -46,6 +46,8 @@ public class UserFacadeImpl implements UserFacade {
 
     @Override
     public Mono<UserResponseDTO> getByDocumentNumber(String documentNumber) {
-        return userUseCase.getByDocumentId(documentNumber).map(mapper::toResponse);
+        return userUseCase.getByDocumentId(documentNumber)
+                .switchIfEmpty(Mono.error(new ResourceNotFoundException("Usuario", documentNumber)))
+                .map(mapper::toResponse);
     }
 }

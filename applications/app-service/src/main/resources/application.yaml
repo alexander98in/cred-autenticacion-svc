@@ -39,3 +39,8 @@ management:
         enabled: true
 cors:
   allowed-origins: "http://localhost:4200,http://localhost:8080"
+
+logging:
+  level:
+    co.com.pragma.autenticacion.api.config.RequestLoggingFilter: DEBUG
+    co.com.pragma.autenticacion.api: INFO
