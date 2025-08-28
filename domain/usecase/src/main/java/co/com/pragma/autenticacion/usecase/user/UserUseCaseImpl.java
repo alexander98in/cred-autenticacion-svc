@@ -15,21 +15,30 @@ public class UserUseCaseImpl implements UserUseCase {
 
     @Override
     public Mono<User> register(User user) {
-        return null;
+        String email = user.getEmail().trim().toLowerCase();
+
+        return userRepository.existsByEmail(email)
+                .flatMap(exists -> exists
+                        ? Mono.error(new IllegalArgumentException("Email already in use"))
+                        : Mono.defer(() -> {
+                            user.setEmail(email);
+                            return userRepository.register(user);
+                        })
+                );
     }
 
     @Override
     public Flux<User> list() {
-        return null;
+        return userRepository.findAllUsers();
     }
 
     @Override
     public Mono<User> getById(UUID id) {
-        return null;
+        return userRepository.findUserById(id);
     }
 
     @Override
     public Mono<User> getByEmail(String email) {
-        return null;
+        return userRepository.findByEmail(email.trim().toLowerCase());
     }
 }

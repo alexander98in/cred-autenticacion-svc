@@ -8,34 +8,11 @@ import java.util.UUID;
 
 public interface RolRepository {
 
-    /**
-     * Elimina un rol por su ID.
-     *
-     * @param idRol El ID del rol a eliminar.
-     * @return Un Mono que indica la finalización de la operación.
-     */
-    Mono<Void> deleteById(UUID idRol);
+    Mono<Void> deleteRolById(UUID idRol);
 
-    /**
-     * Guarda un rol en el repositorio.
-     *
-     * @param rol El rol a guardar.
-     * @return Un Mono que emite el rol guardado.
-     */
-    Mono<Rol> save(Rol rol);
+    Mono<Rol> saveRol(Rol rol);
 
-    /**
-     * Busca un rol por su ID.
-     *
-     * @param idRol El ID del rol a buscar.
-     * @return Un Mono que emite el rol encontrado, o vacío si no se encuentra.
-     */
-    Mono<Rol> findById(UUID idRol);
+    Mono<Rol> findRolById(UUID idRol);
 
-    /**
-     * Busca todos los roles en el repositorio.
-     *
-     * @return Un Flux que emite todos los roles encontrados.
-     */
-    Flux<Rol> findAll();
+    Flux<Rol> findAllRols();
 }
