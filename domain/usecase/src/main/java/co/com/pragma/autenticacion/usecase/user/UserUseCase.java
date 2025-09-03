@@ -17,11 +17,11 @@ public interface UserUseCase {
     /** Lista todos los usuarios */
     Flux<User> listUsers();
 
+    Mono<User> getByDocumentId(String documentId);
+
     /** Consulta por id */
     Mono<User> getById(UUID id);
 
     /** Consulta por email */
     Mono<User> getByEmail(String email);
-
-    Mono<User> getByDocumentId(String documentId);
 }

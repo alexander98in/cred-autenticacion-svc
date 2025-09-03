@@ -11,7 +11,7 @@ spring:
   profiles:
     include: null
   r2dbc:
-    url: "r2dbc:postgresql://localhost:5432/cred_autenticacion"
+    url: "r2dbc:postgresql://localhost:5432/pragma_credi"
     username: "postgres"
     password: "admin"
   sql.init.mode: "never"
@@ -24,7 +24,7 @@ adapters:
   r2dbc:
     host: "localhost"
     port: 5432
-    database: "cred_autenticacion"
+    database: "pragma_credi"
     schema: "public"
     username: "postgres"
     password: "admin"
@@ -42,5 +42,4 @@ cors:
 
 logging:
   level:
-    co.com.pragma.autenticacion.api.config.RequestLoggingFilter: DEBUG
-    co.com.pragma.autenticacion.api: INFO
+    co.com.pragma.autenticacion.api: DEBUG

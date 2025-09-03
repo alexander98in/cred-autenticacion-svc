@@ -22,32 +22,48 @@ public class UserFacadeImpl implements UserFacade {
     private final UserDTOMapper mapper;
     private final ReactiveTransactionManager txManager;
 
-    private TransactionalOperator operator() { return TransactionalOperator.create(txManager); }
+    private TransactionalOperator operator() {
+        return TransactionalOperator.create(txManager);
+    }
 
-    @Override
-    public Mono<UserResponseDTO> register(UserRequestDTO dto) {
-        return Mono.just(dto)
-                .map(mapper::toDomain)
-                .flatMap(u -> userUseCase.register(u).as(operator()::transactional))
-                .map(mapper::toResponse);
+    private <T> Mono<T> transactional(Mono<T> mono) {
+        return mono.as(operator()::transactional);
     }
 
     @Override
-    public Mono<UserResponseDTO> getById(UUID id) {
-        return userUseCase.getById(id)
-                .switchIfEmpty(Mono.error(new ResourceNotFoundException("Usuario", id.toString())))
-                .map(mapper::toResponse);
+    public Mono<UserResponseDTO> register(UserRequestDTO dto) {
+        return Mono.defer(() -> {
+            var domain = mapper.toDomain(dto);
+            return transactional(
+                    userUseCase.register(domain)
+                            .map(mapper::toResponse)
+            );
+        });
     }
 
     @Override
     public Flux<UserResponseDTO> list() {
-        return userUseCase.listUsers().map(mapper::toResponse);
+        return Flux.defer(() ->
+                userUseCase.listUsers()
+                        .map(mapper::toResponse)
+        );
     }
 
     @Override
     public Mono<UserResponseDTO> getByDocumentNumber(String documentNumber) {
-        return userUseCase.getByDocumentId(documentNumber)
-                .switchIfEmpty(Mono.error(new ResourceNotFoundException("Usuario", documentNumber)))
-                .map(mapper::toResponse);
+        return Mono.defer(() ->
+                userUseCase.getByDocumentId(documentNumber)
+                        .switchIfEmpty(Mono.error(new ResourceNotFoundException("Usuario", documentNumber)))
+                        .map(mapper::toResponse)
+        );
+    }
+
+    @Override
+    public Mono<UserResponseDTO> getById(UUID id) {
+        return Mono.defer(() ->
+                userUseCase.getById(id)
+                        .switchIfEmpty(Mono.error(new ResourceNotFoundException("Usuario", id.toString())))
+                        .map(mapper::toResponse)
+        );
     }
 }

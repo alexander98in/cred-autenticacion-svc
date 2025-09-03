@@ -10,7 +10,8 @@ import java.util.UUID;
 public interface UserFacade {
 
     Mono<UserResponseDTO> register(UserRequestDTO dto);
-    Mono<UserResponseDTO> getById(UUID id);
     Flux<UserResponseDTO> list();
     Mono<UserResponseDTO> getByDocumentNumber(String documentNumber);
+    Mono<UserResponseDTO> getById(UUID id);
+
 }
