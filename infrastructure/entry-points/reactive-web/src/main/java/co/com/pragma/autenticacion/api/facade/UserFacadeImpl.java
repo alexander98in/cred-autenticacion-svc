@@ -66,4 +66,13 @@ public class UserFacadeImpl implements UserFacade {
                         .map(mapper::toResponse)
         );
     }
+
+    @Override
+    public Mono<UserResponseDTO> getByEmail(String email) {
+        return Mono.defer(() ->
+                userUseCase.getByEmail(email)
+                        .switchIfEmpty(Mono.error(new ResourceNotFoundException("Usuario", email)))
+                        .map(mapper::toResponse)
+        );
+    }
 }

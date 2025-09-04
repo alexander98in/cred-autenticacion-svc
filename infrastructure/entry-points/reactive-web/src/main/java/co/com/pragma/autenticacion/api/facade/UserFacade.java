@@ -13,5 +13,6 @@ public interface UserFacade {
     Flux<UserResponseDTO> list();
     Mono<UserResponseDTO> getByDocumentNumber(String documentNumber);
     Mono<UserResponseDTO> getById(UUID id);
+    Mono<UserResponseDTO> getByEmail(String email);
 
 }

@@ -4,6 +4,7 @@ import co.com.pragma.autenticacion.model.user.User;
 import co.com.pragma.autenticacion.model.user.gateways.UserRepository;
 import co.com.pragma.autenticacion.r2dbc.entity.UserEntity;
 import co.com.pragma.autenticacion.r2dbc.helper.ReactiveAdapterOperations;
+import co.com.pragma.autenticacion.r2dbc.utils.PasswordService;
 import org.reactivecommons.utils.ObjectMapper;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
@@ -14,8 +15,11 @@ import java.util.UUID;
 @Repository
 public class UserReactiveRepositoryAdapter extends ReactiveAdapterOperations<User, UserEntity, UUID, UserReactiveRepository> implements UserRepository {
 
-    public UserReactiveRepositoryAdapter(UserReactiveRepository repository, ObjectMapper mapper) {
+    private final PasswordService passwordService;
+
+    public UserReactiveRepositoryAdapter(UserReactiveRepository repository, ObjectMapper mapper, PasswordService passwordService) {
         super(repository, mapper, d -> mapper.map(d, User.class));
+        this.passwordService = passwordService;
     }
 
     @Override

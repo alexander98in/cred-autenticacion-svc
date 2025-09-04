@@ -33,5 +33,6 @@ public class User {
     private LocalDate birthDate;
     private String address;
     private UUID idRol;
+    private String password;
 
 }

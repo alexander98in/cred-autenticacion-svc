@@ -47,4 +47,7 @@ public class UserEntity {
 
     @Column("id_rol")
     private UUID idRol;
+
+    @Column("password")
+    private String password;
 }

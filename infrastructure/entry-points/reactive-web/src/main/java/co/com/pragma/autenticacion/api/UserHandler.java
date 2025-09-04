@@ -74,6 +74,20 @@ public class UserHandler {
         });
     }
 
+    public Mono<ServerResponse> getUserByEmail(ServerRequest req) {
+        return Mono.defer(() -> {
+            String requestId = MDC.get(MDC_KEY);
+            var email = req.pathVariable("email");
+
+            log.info("[{}] GET /api/v1/usuarios/email/{} - buscando usuario", requestId, maskEmail(email));
+
+            return userFacade.getByEmail(email)
+                    .doOnSuccess(u -> log.info("[{}] usuario encontrado id={}", requestId, u.id()))
+                    .doOnError(e -> log.error("[{}] error en getUserByEmail ", requestId, e))
+                    .flatMap(user -> ResponseUtil.ok(req, "Usuario encontrado", user));
+        });
+    }
+
     private Mono<UserRequestDTO> validate(UserRequestDTO dto) {
         var errors = new BeanPropertyBindingResult(dto, UserRequestDTO.class.getName());
         validator.validate(dto, errors);

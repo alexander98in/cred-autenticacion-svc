@@ -46,6 +46,11 @@ public record UserRequestDTO(
     String address,
 
     @Schema(example = "be066aae-0556-47c8-9e4b-e2f3b5c63f08")
-    String idRol
+    String idRol,
+
+    @Schema(example = "P@ssw0rd!")
+    @NotBlank(message = "{user.password.required}")
+    @Size(min = 8, max = 20, message = "{user.password.size}")
+    String password
 ) { }
 
