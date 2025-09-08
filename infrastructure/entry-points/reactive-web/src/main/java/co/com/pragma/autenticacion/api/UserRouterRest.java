@@ -13,10 +13,11 @@ import static org.springframework.web.reactive.function.server.RequestPredicates
 public class UserRouterRest {
 
     @Bean
-    public RouterFunction<ServerResponse> userRoutes(UserHandler handler) {
+    public RouterFunction<ServerResponse> userRoutes(UserHandler handler, AuthHandler authHandler) {
         return route(POST("/api/v1/usuarios"), handler::registerUser)
                 .andRoute(GET("/api/v1/usuarios/listar"), handler::listUsers)
                 .andRoute(GET("/api/v1/usuarios/documento/{documentNumber}"), handler::getUserByDocumentNumber)
-                .andRoute(GET("/api/v1/usuarios/email/{email}"), handler::getUserByEmail);
+                .andRoute(GET("/api/v1/usuarios/email/{email}"), handler::getUserByEmail)
+                .andRoute(POST("/api/v1/auth/login"), authHandler::login);
     }
 }

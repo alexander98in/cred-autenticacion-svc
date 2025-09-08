@@ -26,8 +26,7 @@ public class UserHandler {
 
     private final UserFacade userFacade;
     private final SmartValidator validator;
-
-
+    
     public Mono<ServerResponse> registerUser(ServerRequest req) {
         return Mono.defer(() -> {
             String requestId = MDC.get(MDC_KEY); // Tomamos el requestId del filter

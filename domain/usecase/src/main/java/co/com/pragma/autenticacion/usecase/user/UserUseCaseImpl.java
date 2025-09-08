@@ -2,6 +2,7 @@ package co.com.pragma.autenticacion.usecase.user;
 
 import co.com.pragma.autenticacion.model.user.User;
 import co.com.pragma.autenticacion.model.user.UserConstraints;
+import co.com.pragma.autenticacion.model.user.gateways.PasswordHasher;
 import co.com.pragma.autenticacion.model.user.gateways.UserRepository;
 import co.com.pragma.autenticacion.model.user.validator.UserValidator;
 import co.com.pragma.autenticacion.usecase.exceptions.BusinessRuleViolationException;
@@ -17,6 +18,7 @@ import java.util.UUID;
 public class UserUseCaseImpl implements UserUseCase {
 
     private final UserRepository userRepository;
+    private final PasswordHasher passwordHasher;
 
     @Override
     public Mono<User> register(User user) {
@@ -49,6 +51,9 @@ public class UserUseCaseImpl implements UserUseCase {
                         return Mono.error(new ResourceAlreadyExistsException(
                                 "El documento_identidad ya está registrado: " + result.user().getDocumentId()));
                     }
+
+                    String hashed = passwordHasher.encode(result.user.getPassword());
+                    result.user.setPassword(hashed);
                     // Registro del usuario
                     return userRepository.register(result.user());
                 });

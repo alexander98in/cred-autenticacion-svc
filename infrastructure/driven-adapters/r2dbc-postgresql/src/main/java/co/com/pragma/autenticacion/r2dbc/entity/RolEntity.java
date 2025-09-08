@@ -16,7 +16,7 @@ import java.util.UUID;
 public class RolEntity {
 
     @Id
-    @Column("id")
+    @Column("id_rol")
     private UUID id;
 
     @Column("nombre")

@@ -39,4 +39,10 @@ public class RolReactiveRepositoryAdapter extends ReactiveAdapterOperations<Rol,
         return repository.findAll()
             .map(this::toEntity);
     }
+
+    @Override
+    public Flux<Rol> findRolesByUserId(UUID userId) {
+        return repository.findByUserId(userId)
+                .map(this::toEntity);
+    }
 }

@@ -1,5 +1,6 @@
 package co.com.pragma.autenticacion.r2dbc;
 
+import co.com.pragma.autenticacion.model.rol.Rol;
 import co.com.pragma.autenticacion.model.user.User;
 import co.com.pragma.autenticacion.model.user.gateways.UserRepository;
 import co.com.pragma.autenticacion.r2dbc.entity.UserEntity;
@@ -65,5 +66,10 @@ public class UserReactiveRepositoryAdapter extends ReactiveAdapterOperations<Use
     public Flux<User> findAllUsers() {
         return repository.findAll()
             .map(this::toEntity);
+    }
+
+    @Override
+    public Flux<Rol> getRolesByUserId(UUID userId) {
+        return null;
     }
 }

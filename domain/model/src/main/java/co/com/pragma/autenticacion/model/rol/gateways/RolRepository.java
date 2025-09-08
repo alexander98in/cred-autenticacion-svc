@@ -15,4 +15,6 @@ public interface RolRepository {
     Mono<Rol> findRolById(UUID idRol);
 
     Flux<Rol> findAllRols();
+
+    Flux<Rol> findRolesByUserId(UUID userId);
 }

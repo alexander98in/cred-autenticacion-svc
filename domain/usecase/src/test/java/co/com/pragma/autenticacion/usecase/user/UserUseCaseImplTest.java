@@ -2,6 +2,7 @@ package co.com.pragma.autenticacion.usecase.user;
 
 import co.com.pragma.autenticacion.model.user.User;
 import co.com.pragma.autenticacion.model.user.UserConstraints;
+import co.com.pragma.autenticacion.model.user.gateways.PasswordHasher;
 import co.com.pragma.autenticacion.model.user.gateways.UserRepository;
 import co.com.pragma.autenticacion.usecase.exceptions.BusinessRuleViolationException;
 import co.com.pragma.autenticacion.usecase.exceptions.ResourceAlreadyExistsException;
@@ -29,11 +30,14 @@ public class UserUseCaseImplTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private PasswordHasher passwordHasher;
+
     private UserUseCase useCase;
 
     @BeforeEach
     void setUp() {
-        useCase = new UserUseCaseImpl(userRepository);
+        useCase = new UserUseCaseImpl(userRepository, passwordHasher);
     }
 
     private User baseUser() {
