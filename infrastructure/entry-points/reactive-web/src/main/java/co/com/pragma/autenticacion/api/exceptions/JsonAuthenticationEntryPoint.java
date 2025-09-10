@@ -1,6 +1,7 @@
 package co.com.pragma.autenticacion.api.exceptions;
 
 import co.com.pragma.autenticacion.api.common.ApiResponse;
+import co.com.pragma.autenticacion.api.common.ErrorCode;
 import co.com.pragma.autenticacion.api.common.ErrorResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -25,16 +26,15 @@ public class JsonAuthenticationEntryPoint implements ServerAuthenticationEntryPo
         var method = (req.getMethod() != null) ? req.getMethod().name() : null;
 
         var err = ErrorResponse.builder()
-                .errorCode("UNAUTHORIZED") // agrega en tu enum si quieres
-                .message("No autenticado o token inválido")
-                .httpStatus(status.value())
+                .errorCode(ErrorCode.INVALID_CREDENTIALS.getCode()) // agrega en tu enum si quieres
+                .message(ErrorCode.INVALID_CREDENTIALS.getMessage())
                 .url(req.getURI().getPath())
                 .method(method)
                 .build();
 
         var body = ApiResponse.of(
-                status.value(),
-                "Solicitud inválida",
+                ErrorCode.INVALID_CREDENTIALS.getCode(),
+                ErrorCode.INVALID_CREDENTIALS.getMessage(),
                 err,
                 req.getURI().getPath()
         );

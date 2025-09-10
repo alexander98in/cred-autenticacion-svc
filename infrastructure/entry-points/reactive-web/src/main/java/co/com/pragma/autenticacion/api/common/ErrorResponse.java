@@ -14,9 +14,9 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ErrorResponse<T> {
+
     private String errorCode;
     private String message;
-    private Integer httpStatus;
     private String url;
     private String method;
     private T data;

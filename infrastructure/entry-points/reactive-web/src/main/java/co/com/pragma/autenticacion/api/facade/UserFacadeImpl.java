@@ -53,7 +53,6 @@ public class UserFacadeImpl implements UserFacade {
     public Mono<UserResponseDTO> getByDocumentNumber(String documentNumber) {
         return Mono.defer(() ->
                 userUseCase.getByDocumentId(documentNumber)
-                        .switchIfEmpty(Mono.error(new ResourceNotFoundException("Usuario", documentNumber)))
                         .map(mapper::toResponse)
         );
     }
@@ -62,7 +61,6 @@ public class UserFacadeImpl implements UserFacade {
     public Mono<UserResponseDTO> getById(UUID id) {
         return Mono.defer(() ->
                 userUseCase.getById(id)
-                        .switchIfEmpty(Mono.error(new ResourceNotFoundException("Usuario", id.toString())))
                         .map(mapper::toResponse)
         );
     }
@@ -71,7 +69,6 @@ public class UserFacadeImpl implements UserFacade {
     public Mono<UserResponseDTO> getByEmail(String email) {
         return Mono.defer(() ->
                 userUseCase.getByEmail(email)
-                        .switchIfEmpty(Mono.error(new ResourceNotFoundException("Usuario", email)))
                         .map(mapper::toResponse)
         );
     }

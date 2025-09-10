@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springdoc.core.annotations.RouterOperation;
 import org.springdoc.core.annotations.RouterOperations;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -41,6 +42,7 @@ public class UserRouterDocs {
                     operation = @Operation(
                             operationId = "registerUser",
                             tags = { TAG },
+                            security = { @SecurityRequirement(name = "bearerAuth") },
                             summary = REG_SUMMARY,
                             description = REG_DESC,
                             requestBody = @RequestBody(required = true, content = @Content(
@@ -64,6 +66,7 @@ public class UserRouterDocs {
                     operation = @Operation(
                             operationId = "listUsers",
                             tags = { TAG },
+                            security = { @SecurityRequirement(name = "bearerAuth") },
                             summary = LIST_SUMMARY,
                             description = LIST_DESC,
                             responses = @ApiResponse(responseCode = "200",
@@ -80,6 +83,7 @@ public class UserRouterDocs {
                     operation = @Operation(
                             operationId = "getUserByDocumentNumber",
                             tags = { TAG },
+                            security = { @SecurityRequirement(name = "bearerAuth") },
                             summary = GET_BY_DOC_SUMMARY,
                             description = GET_BY_DOC_DESC,
                             parameters = {

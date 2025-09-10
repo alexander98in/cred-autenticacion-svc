@@ -1,30 +1,30 @@
 package co.com.pragma.autenticacion.usecase.user;
 
+
 import co.com.pragma.autenticacion.model.user.User;
-import co.com.pragma.autenticacion.model.user.UserConstraints;
 import co.com.pragma.autenticacion.model.user.gateways.PasswordHasher;
 import co.com.pragma.autenticacion.model.user.gateways.UserRepository;
 import co.com.pragma.autenticacion.usecase.exceptions.BusinessRuleViolationException;
 import co.com.pragma.autenticacion.usecase.exceptions.ResourceAlreadyExistsException;
 import co.com.pragma.autenticacion.usecase.exceptions.ResourceNotFoundException;
+import co.com.pragma.autenticacion.usecase.utils.ErrorCodeDomain;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.MockitoAnnotations;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 public class UserUseCaseImplTest {
 
     @Mock
@@ -33,205 +33,157 @@ public class UserUseCaseImplTest {
     @Mock
     private PasswordHasher passwordHasher;
 
-    private UserUseCase useCase;
+    private UserUseCaseImpl useCase;
+
+    private User validUser;
 
     @BeforeEach
     void setUp() {
+        MockitoAnnotations.openMocks(this);
         useCase = new UserUseCaseImpl(userRepository, passwordHasher);
-    }
 
-    private User baseUser() {
-        return User.builder()
-                .id(null)
-                .name("Juan")
-                .lastName("Pérez")
-                .email("  JUAN.PEREZ@EXAMPLE.COM ")
-                .documentId("1061811110")
-                .phone("3234703198")
-                .salary(new BigDecimal("1200000"))
-                .birthDate(LocalDate.of(1995, 7, 19))
-                .address("Calle 25 N")
-                .idRol(UUID.randomUUID())
+        validUser = User.builder()
+                .id(UUID.randomUUID())
+                .name("John")
+                .lastName("Doe")
+                .email("john.doe@email.com")
+                .documentId("123456789")
+                .phone("5551234")
+                .salary(BigDecimal.valueOf(5000))
+                .password("password123")
                 .build();
     }
 
+    // ==============================
+    // CASOS DE REGISTER()
+    // ==============================
+
     @Test
-    void register_ok_cuandoNoExisteEmailNiDocumento() {
-        // given
-        var in = baseUser();
-        var normalizedEmail = "juan.perez@example.com";
-        var saved = in.toBuilder().id(UUID.randomUUID()).email(normalizedEmail).build();
+    void register_success() {
+        when(userRepository.existsByEmail(validUser.getEmail())).thenReturn(Mono.just(false));
+        when(userRepository.existsByDocumentId(validUser.getDocumentId())).thenReturn(Mono.just(false));
+        when(passwordHasher.encode(validUser.getPassword())).thenReturn("hashedPassword");
+        when(userRepository.register(validUser)).thenReturn(Mono.just(validUser.toBuilder().password("hashedPassword").build()));
 
-        when(userRepository.existsByEmail(normalizedEmail)).thenReturn(Mono.just(false));
-        when(userRepository.existsByDocumentId("1061811110")).thenReturn(Mono.just(false));
-        when(userRepository.register(any(User.class))).thenReturn(Mono.just(saved));
-
-        // when & then
-        StepVerifier.create(useCase.register(in))
-                .expectNextMatches(u -> u.getId() != null && u.getEmail().equals(normalizedEmail))
+        StepVerifier.create(useCase.register(validUser))
+                .expectNextMatches(user -> user.getPassword().equals("hashedPassword") && user.getEmail().equals(validUser.getEmail()))
                 .verifyComplete();
-
-        // Se llaman ambos chequeos por el zip
-        verify(userRepository).existsByEmail(normalizedEmail);
-        verify(userRepository).existsByDocumentId("1061811110");
-
-        // Se registra con email normalizado
-        ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
-        verify(userRepository).register(captor.capture());
-        assertThat(captor.getValue().getEmail()).isEqualTo(normalizedEmail);
-
-        verifyNoMoreInteractions(userRepository);
     }
 
     @Test
-    void register_falla_porEmailDuplicado() {
-        var in = baseUser();
-        var normalizedEmail = "juan.perez@example.com";
+    void register_fail_emailAlreadyExists() {
+        when(userRepository.existsByEmail(validUser.getEmail())).thenReturn(Mono.just(true));
+        when(userRepository.existsByDocumentId(validUser.getDocumentId())).thenReturn(Mono.just(false));
 
-        when(userRepository.existsByEmail(normalizedEmail)).thenReturn(Mono.just(true));
-        when(userRepository.existsByDocumentId("1061811110")).thenReturn(Mono.just(false));
-
-        StepVerifier.create(useCase.register(in))
-                .expectErrorSatisfies(ex -> {
-                    assertThat(ex).isInstanceOf(ResourceAlreadyExistsException.class);
-                    assertThat(ex.getMessage()).contains("email");
-                })
+        StepVerifier.create(useCase.register(validUser))
+                .expectErrorMatches(throwable -> throwable instanceof ResourceAlreadyExistsException &&
+                        throwable.getMessage().contains("El email"))
                 .verify();
-
-        verify(userRepository).existsByEmail(normalizedEmail);
-        // con zip, también se invoca el otro:
-        verify(userRepository).existsByDocumentId("1061811110");
-        verify(userRepository, never()).register(any());
-        verifyNoMoreInteractions(userRepository);
     }
 
     @Test
-    void register_falla_porDocumentoDuplicado() {
-        var in = baseUser();
-        var normalizedEmail = "juan.perez@example.com";
+    void register_fail_documentAlreadyExists() {
+        when(userRepository.existsByEmail(validUser.getEmail())).thenReturn(Mono.just(false));
+        when(userRepository.existsByDocumentId(validUser.getDocumentId())).thenReturn(Mono.just(true));
 
-        when(userRepository.existsByEmail(normalizedEmail)).thenReturn(Mono.just(false));
-        when(userRepository.existsByDocumentId("1061811110")).thenReturn(Mono.just(true));
-
-        StepVerifier.create(useCase.register(in))
-                .expectErrorSatisfies(ex -> {
-                    assertThat(ex).isInstanceOf(ResourceAlreadyExistsException.class);
-                    assertThat(ex.getMessage()).contains("documento_identidad");
-                })
+        StepVerifier.create(useCase.register(validUser))
+                .expectErrorMatches(throwable -> throwable instanceof ResourceAlreadyExistsException &&
+                        throwable.getMessage().contains("El número de documento"))
                 .verify();
-
-        verify(userRepository).existsByEmail(normalizedEmail);
-        verify(userRepository).existsByDocumentId("1061811110");
-        verify(userRepository, never()).register(any());
-        verifyNoMoreInteractions(userRepository);
     }
 
     @Test
-    void register_falla_porSalarioFueraDeRango() {
-        var in = baseUser().toBuilder()
-                .salary(UserConstraints.MAX_SALARY.add(BigDecimal.ONE)) // > 15'000.000
-                .build();
+    void register_fail_salaryOutOfRange() {
+        User userWithBadSalary = validUser.toBuilder().salary(BigDecimal.valueOf(1)).build();
 
-        StepVerifier.create(useCase.register(in))
-                .expectErrorSatisfies(ex -> {
-                    assertThat(ex).isInstanceOf(BusinessRuleViolationException.class);
-                    assertThat(ex.getMessage()).contains("salario_base");
-                })
+        when(userRepository.existsByEmail(userWithBadSalary.getEmail())).thenReturn(Mono.just(false));
+        when(userRepository.existsByDocumentId(userWithBadSalary.getDocumentId())).thenReturn(Mono.just(false));
+
+        StepVerifier.create(useCase.register(userWithBadSalary))
+                .expectErrorMatches(throwable -> throwable instanceof BusinessRuleViolationException &&
+                        throwable.getMessage().contains("El salario"))
                 .verify();
+    }
 
-        // La validación ocurre en Mono.fromCallable() ANTES de tocar el repo
-        verifyNoInteractions(userRepository);
+    // ==============================
+    // CASOS DE getByDocumentId()
+    // ==============================
+
+    @Test
+    void getByDocumentId_success() {
+        when(userRepository.findByDocumentId(validUser.getDocumentId())).thenReturn(Mono.just(validUser));
+
+        StepVerifier.create(useCase.getByDocumentId(validUser.getDocumentId()))
+                .expectNext(validUser)
+                .verifyComplete();
     }
 
     @Test
-    void listUsers_ok() {
-        var u1 = baseUser().toBuilder().id(UUID.randomUUID()).email("a@a.com").build();
-        var u2 = baseUser().toBuilder().id(UUID.randomUUID()).email("b@b.com").build();
+    void getByDocumentId_fail_notFound() {
+        when(userRepository.findByDocumentId(validUser.getDocumentId())).thenReturn(Mono.empty());
 
-        when(userRepository.findAllUsers()).thenReturn(Flux.just(u1, u2));
+        StepVerifier.create(useCase.getByDocumentId(validUser.getDocumentId()))
+                .expectErrorMatches(throwable -> throwable instanceof ResourceNotFoundException &&
+                        throwable.getMessage().contains("Document ID"))
+                .verify();
+    }
+
+    // ==============================
+    // CASOS DE getById()
+    // ==============================
+
+    @Test
+    void getById_success() {
+        when(userRepository.findUserById(validUser.getId())).thenReturn(Mono.just(validUser));
+
+        StepVerifier.create(useCase.getById(validUser.getId()))
+                .expectNext(validUser)
+                .verifyComplete();
+    }
+
+    @Test
+    void getById_fail_notFound() {
+        when(userRepository.findUserById(validUser.getId())).thenReturn(Mono.empty());
+
+        StepVerifier.create(useCase.getById(validUser.getId()))
+                .expectErrorMatches(throwable -> throwable instanceof ResourceNotFoundException &&
+                        throwable.getMessage().contains("ID"))
+                .verify();
+    }
+
+    // ==============================
+    // CASOS DE getByEmail()
+    // ==============================
+
+    @Test
+    void getByEmail_success() {
+        when(userRepository.findByEmail(validUser.getEmail())).thenReturn(Mono.just(validUser));
+
+        StepVerifier.create(useCase.getByEmail(validUser.getEmail()))
+                .expectNext(validUser)
+                .verifyComplete();
+    }
+
+    @Test
+    void getByEmail_fail_notFound() {
+        when(userRepository.findByEmail(validUser.getEmail())).thenReturn(Mono.empty());
+
+        StepVerifier.create(useCase.getByEmail(validUser.getEmail()))
+                .expectErrorMatches(throwable -> throwable instanceof ResourceNotFoundException &&
+                        throwable.getMessage().contains("Email"))
+                .verify();
+    }
+
+    // ==============================
+    // CASOS DE listUsers()
+    // ==============================
+
+    @Test
+    void listUsers_success() {
+        when(userRepository.findAllUsers()).thenReturn(Flux.fromIterable(List.of(validUser)));
 
         StepVerifier.create(useCase.listUsers())
-                .expectNext(u1, u2)
+                .expectNext(validUser)
                 .verifyComplete();
-
-        verify(userRepository).findAllUsers();
-        verifyNoMoreInteractions(userRepository);
-    }
-
-    @Test
-    void getByDocumentId_ok() {
-        var u = baseUser().toBuilder().id(UUID.randomUUID()).email("x@x.com").build();
-        when(userRepository.findByDocumentId("1061811110")).thenReturn(Mono.just(u));
-
-        StepVerifier.create(useCase.getByDocumentId("1061811110"))
-                .expectNext(u)
-                .verifyComplete();
-
-        verify(userRepository).findByDocumentId("1061811110");
-        verifyNoMoreInteractions(userRepository);
-    }
-
-    @Test
-    void getByDocumentId_notFound_lanzaExcepcionDominio() {
-        when(userRepository.findByDocumentId("999")).thenReturn(Mono.empty());
-
-        StepVerifier.create(useCase.getByDocumentId("999"))
-                .expectError(ResourceNotFoundException.class)
-                .verify();
-
-        verify(userRepository).findByDocumentId("999");
-        verifyNoMoreInteractions(userRepository);
-    }
-
-    @Test
-    void getById_ok() {
-        UUID id = UUID.randomUUID();
-        var u = baseUser().toBuilder().id(id).email("y@y.com").build();
-        when(userRepository.findUserById(id)).thenReturn(Mono.just(u));
-
-        StepVerifier.create(useCase.getById(id))
-                .expectNext(u)
-                .verifyComplete();
-
-        verify(userRepository).findUserById(id);
-        verifyNoMoreInteractions(userRepository);
-    }
-
-    @Test
-    void getById_notFound_lanzaExcepcionDominio() {
-        UUID id = UUID.randomUUID();
-        when(userRepository.findUserById(id)).thenReturn(Mono.empty());
-
-        StepVerifier.create(useCase.getById(id))
-                .expectError(ResourceNotFoundException.class)
-                .verify();
-
-        verify(userRepository).findUserById(id);
-        verifyNoMoreInteractions(userRepository);
-    }
-
-    @Test
-    void getByEmail_ok_normalizaMinusculasYTrim() {
-        var u = baseUser().toBuilder().id(UUID.randomUUID()).email("h@h.com").build();
-        when(userRepository.findByEmail("h@h.com")).thenReturn(Mono.just(u));
-
-        StepVerifier.create(useCase.getByEmail("  H@H.COM "))
-                .expectNext(u)
-                .verifyComplete();
-
-        verify(userRepository).findByEmail("h@h.com");
-        verifyNoMoreInteractions(userRepository);
-    }
-
-    @Test
-    void getByEmail_notFound_lanzaExcepcionDominio() {
-        when(userRepository.findByEmail("a@a.com")).thenReturn(Mono.empty());
-
-        StepVerifier.create(useCase.getByEmail("a@a.com"))
-                .expectError(ResourceNotFoundException.class)
-                .verify();
-
-        verify(userRepository).findByEmail("a@a.com");
-        verifyNoMoreInteractions(userRepository);
     }
 }

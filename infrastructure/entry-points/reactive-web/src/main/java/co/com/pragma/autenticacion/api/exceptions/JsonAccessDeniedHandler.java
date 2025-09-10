@@ -1,6 +1,7 @@
 package co.com.pragma.autenticacion.api.exceptions;
 
 import co.com.pragma.autenticacion.api.common.ApiResponse;
+import co.com.pragma.autenticacion.api.common.ErrorCode;
 import co.com.pragma.autenticacion.api.common.ErrorResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -24,16 +25,15 @@ public class JsonAccessDeniedHandler implements ServerAccessDeniedHandler {
         var method = (req.getMethod() != null) ? req.getMethod().name() : null;
 
         var err = ErrorResponse.builder()
-                .errorCode("FORBIDDEN")
-                .message("Acceso denegado")
-                .httpStatus(status.value())
+                .errorCode(ErrorCode.UNAUTHORIZED_ACTION.getCode())
+                .message(ErrorCode.UNAUTHORIZED_ACTION.getMessage())
                 .url(req.getURI().getPath())
                 .method(method)
                 .build();
 
         var body = ApiResponse.of(
-                status.value(),
-                "Solicitud inválida",
+                ErrorCode.UNAUTHORIZED_ACTION.getCode(),
+                ErrorCode.UNAUTHORIZED_ACTION.getMessage(),
                 err,
                 req.getURI().getPath()
         );

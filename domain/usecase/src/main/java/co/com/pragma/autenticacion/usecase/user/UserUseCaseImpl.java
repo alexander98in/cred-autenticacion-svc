@@ -8,6 +8,7 @@ import co.com.pragma.autenticacion.model.user.validator.UserValidator;
 import co.com.pragma.autenticacion.usecase.exceptions.BusinessRuleViolationException;
 import co.com.pragma.autenticacion.usecase.exceptions.ResourceAlreadyExistsException;
 import co.com.pragma.autenticacion.usecase.exceptions.ResourceNotFoundException;
+import co.com.pragma.autenticacion.usecase.utils.ErrorCodeDomain;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -22,41 +23,37 @@ public class UserUseCaseImpl implements UserUseCase {
 
     @Override
     public Mono<User> register(User user) {
-        return Mono.fromCallable(() -> {
-                    String normalizedEmail = user.getEmail().trim().toLowerCase();
-                    user.setEmail(normalizedEmail);
-                    if (!UserValidator.isSalaryInRange(user.getSalary())) {
-                        String msg = "El salario_base debe estar entre %s y %s"
-                                .formatted(UserConstraints.MIN_SALARY.toPlainString(),
-                                        UserConstraints.MAX_SALARY.toPlainString());
-                        throw new BusinessRuleViolationException("USER_SALARY_OUT_OF_RANGE", msg);
-                    }
-                    return user;
-                })
-                .flatMap(u -> {
-                    record CheckResult(User user, boolean emailExists, boolean docExists) {}
-                    return Mono.zip(
-                            userRepository.existsByEmail(u.getEmail()),
-                            userRepository.existsByDocumentId(u.getDocumentId()),
-                            (emailExists, docExists) -> new CheckResult(u, emailExists, docExists)
-                    );
-                })
-                .flatMap(result -> {
-                    // Validación de duplicados
-                    if (result.emailExists()) {
-                        return Mono.error(new ResourceAlreadyExistsException(
-                                "El email ya está registrado: " + result.user().getEmail()));
-                    }
-                    if (result.docExists()) {
-                        return Mono.error(new ResourceAlreadyExistsException(
-                                "El documento_identidad ya está registrado: " + result.user().getDocumentId()));
-                    }
+        return Mono.zip(
+                userRepository.existsByEmail(user.getEmail()),
+                userRepository.existsByDocumentId(user.getDocumentId())
+        ).flatMap(tuple -> {
+            boolean emailExists = tuple.getT1();
+            boolean documentExists = tuple.getT2();
 
-                    String hashed = passwordHasher.encode(result.user.getPassword());
-                    result.user.setPassword(hashed);
-                    // Registro del usuario
-                    return userRepository.register(result.user());
-                });
+            if (emailExists) {
+                return Mono.error(new ResourceAlreadyExistsException(
+                        ErrorCodeDomain.EMAIL_ALREADY_EXISTS.getCode(),
+                        String.format(ErrorCodeDomain.EMAIL_ALREADY_EXISTS.getMessage(), user.getEmail())
+                ));
+            }
+
+            if (documentExists) {
+                return Mono.error(new ResourceAlreadyExistsException(
+                        ErrorCodeDomain.DOCUMENT_NUMBER_ALREADY_EXISTS.getCode(),
+                        String.format(ErrorCodeDomain.DOCUMENT_NUMBER_ALREADY_EXISTS.getMessage(), user.getDocumentId())
+                ));
+            }
+
+            if (!UserValidator.isSalaryInRange(user.getSalary())) {
+                String msg = String.format(ErrorCodeDomain.SALARY_RANGE.getMessage(),
+                        UserConstraints.MIN_SALARY.toPlainString(), UserConstraints.MAX_SALARY.toPlainString());
+                return Mono.error(new BusinessRuleViolationException(ErrorCodeDomain.SALARY_RANGE.getCode(), msg));
+            }
+
+            String hashed = passwordHasher.encode(user.getPassword());
+            user.setPassword(hashed);
+            return userRepository.register(user);
+        });
     }
 
     @Override
@@ -67,18 +64,27 @@ public class UserUseCaseImpl implements UserUseCase {
     @Override
     public Mono<User> getByDocumentId(String documentId) {
         return userRepository.findByDocumentId(documentId)
-                .switchIfEmpty(Mono.error(new ResourceNotFoundException("Usuario", documentId)));
+                .switchIfEmpty(Mono.error(new ResourceNotFoundException(
+                        ErrorCodeDomain.USER_NOT_FOUND.getCode(),
+                        String.format(ErrorCodeDomain.USER_NOT_FOUND.getMessage(), "Document ID", documentId)
+                )));
     }
 
     @Override
     public Mono<User> getById(UUID id) {
         return userRepository.findUserById(id)
-                .switchIfEmpty(Mono.error(new ResourceNotFoundException("Usuario", id.toString())));
+                .switchIfEmpty(Mono.error(new ResourceNotFoundException(
+                        ErrorCodeDomain.USER_NOT_FOUND.getCode(),
+                        String.format(ErrorCodeDomain.USER_NOT_FOUND.getMessage(), "ID", id.toString())
+                )));
     }
 
     @Override
     public Mono<User> getByEmail(String email) {
         return userRepository.findByEmail(email.trim().toLowerCase())
-                .switchIfEmpty(Mono.error(new ResourceNotFoundException("Usuario", email)));
+                .switchIfEmpty(Mono.error(new ResourceNotFoundException(
+                        ErrorCodeDomain.USER_NOT_FOUND.getCode(),
+                        String.format(ErrorCodeDomain.USER_NOT_FOUND.getMessage(), "Email", email)
+                )));
     }
 }
