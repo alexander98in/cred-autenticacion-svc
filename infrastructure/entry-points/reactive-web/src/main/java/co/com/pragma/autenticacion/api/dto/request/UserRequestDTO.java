@@ -12,7 +12,7 @@ public record UserRequestDTO(
     @Size(min=6, max=100, message = "{user.name.size}")
     String name,
 
-    @Schema(example = "Pérez López")
+    @Schema(example = "Perez Lopez")
     @NotBlank(message = "{user.lastname.required}")
     @Size(min=6, max=100, message = "{user.lastname.size}")
     String lastName,

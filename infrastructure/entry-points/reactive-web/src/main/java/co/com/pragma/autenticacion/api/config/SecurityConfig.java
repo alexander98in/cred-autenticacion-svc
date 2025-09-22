@@ -39,11 +39,11 @@ public class SecurityConfig {
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
                 .authorizeExchange(ex -> ex
-                        // públicos
+                        // publicos
                         .pathMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
                         .pathMatchers("/actuator/**", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
                         // protegidos
-                        // Protegidos (orden específico → de más específico a más general)
+                        // Protegidos (orden especifico → de mas especifico a mas general)
                         .pathMatchers(HttpMethod.POST, "/api/v1/usuarios").hasAuthority("ADMIN")
                         .pathMatchers(HttpMethod.GET, "/api/v1/usuarios/listar")
                         .hasAnyAuthority("ADMIN", "ASESOR")

@@ -27,7 +27,7 @@ public class AuthHandler {
                     if (errors.hasErrors()) {
                         var map = new java.util.LinkedHashMap<String, String>();
                         errors.getFieldErrors().forEach(fe -> map.put(fe.getField(), fe.getDefaultMessage()));
-                        return Mono.error(new co.com.pragma.autenticacion.api.exceptions.RequestValidationException("Datos inválidos", map));
+                        return Mono.error(new co.com.pragma.autenticacion.api.exceptions.RequestValidationException("Datos invalidos", map));
                     }
                     return Mono.just(dto);
                 })

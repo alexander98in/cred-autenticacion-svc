@@ -51,7 +51,7 @@ public class UserRouterDocs {
                             responses = {
                                     @ApiResponse(responseCode = "201", description = "Creado",
                                             content = @Content(schema = @Schema(implementation = UserResponseDTO.class))),
-                                    @ApiResponse(responseCode = "400", description = "Solicitud inválida"),
+                                    @ApiResponse(responseCode = "400", description = "Solicitud invalida"),
                                     @ApiResponse(responseCode = "409", description = "Conflicto por duplicados"),
                                     @ApiResponse(responseCode = "422", description = "Regla de negocio violada")
                             }
@@ -88,7 +88,7 @@ public class UserRouterDocs {
                             description = GET_BY_DOC_DESC,
                             parameters = {
                                     @Parameter(name = "documentNumber", in = ParameterIn.PATH, required = true,
-                                            description = "Número de documento del usuario")
+                                            description = "Numero de documento del usuario")
                             },
                             responses = {
                                     @ApiResponse(responseCode = "200", description = "OK",

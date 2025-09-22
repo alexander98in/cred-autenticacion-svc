@@ -93,8 +93,8 @@ public class UserHandler {
         if (errors.hasErrors()) {
             var map = new java.util.LinkedHashMap<String, String>();
             errors.getFieldErrors().forEach(fe -> map.put(fe.getField(), fe.getDefaultMessage()));
-            log.warn("Solicitud inválida en registerUser: {}", map);
-            throw new RequestValidationException("Datos inválidos en la solicitud", map);
+            log.warn("Solicitud invalida en registerUser: {}", map);
+            throw new RequestValidationException("Datos invalidos en la solicitud", map);
         }
         return Mono.just(dto);
     }

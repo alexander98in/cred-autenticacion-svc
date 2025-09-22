@@ -13,5 +13,5 @@ public final class UserApiDocs {
     public static final String LIST_DESC = "Retorna el listado completo de usuarios.";
 
     public static final String GET_BY_DOC_SUMMARY = "Obtener usuario por documento";
-    public static final String GET_BY_DOC_DESC = "Busca un usuario por su número de documento de identidad.";
+    public static final String GET_BY_DOC_DESC = "Busca un usuario por su numero de documento de identidad.";
 }

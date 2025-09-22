@@ -12,7 +12,7 @@ import java.util.UUID;
 /**
  * Entidad de dominio User
  *
- * Esta clase representa al usuario dentro del dominio de autenticación.
+ * Esta clase representa al usuario dentro del dominio de autenticacion.
  * Define los datos personales, de contacto y salariales que son requeridos
  * para el registro en el sistema (HU-01).
  */

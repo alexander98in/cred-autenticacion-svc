@@ -1,33 +1,35 @@
 server:
-  port: 8080
+  port: ${SERVER_PORT_AUTH:8080}
 spring:
   application:
-    name: "cred-autenticacion-svc"
+    name: ${APP_NAME_AUTH:cred-autenticacion-svc}
   devtools:
     add-properties: false
   jackson:
     parser:
       STRICT_DUPLICATE_DETECTION: true
   profiles:
-    include: null
+    include: ${SPRING_PROFILES_INCLUDE:}
   r2dbc:
-    url: "r2dbc:postgresql://localhost:5432/pragma_credi"
-    username: "postgres"
-    password: "admin"
+
+    url: ${SPRING_R2DBC_URL}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:admin}
   sql.init.mode: "never"
   messages:
-    basename: i18n/validation-messages
-    encoding: UTF-8
+    basename: ${I18N_BASENAME_AUTH:i18n/validation-messages}
+    encoding: ${I18N_ENCODING_AUTH:UTF-8}
     fallback-to-system-locale: false
 
 adapters:
   r2dbc:
-    host: "localhost"
-    port: 5432
-    database: "pragma_credi"
-    schema: "public"
-    username: "postgres"
-    password: "admin"
+    host: ${DB_HOST:localhost}
+    port: ${DB_PORT:5432}
+    database: ${DB_NAME:pragma_credi}
+    schema: ${DB_SCHEMA:public}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:admin}
+
 management:
   endpoints:
     web:
@@ -38,7 +40,7 @@ management:
       probes:
         enabled: true
 cors:
-  allowed-origins: "http://localhost:4200,http://localhost:8080"
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200,http://localhost:8080}
 
 logging:
   level:
@@ -46,5 +48,5 @@ logging:
 
 security:
   jwt:
-    secret: "990d0e64f17121df3b779c857ef93c85fc43842daf91f43c21bfcaf5ac2a8140"
-    ttl-seconds: 3600
+    secret: ${JWT_SECRET:change-me-in-prod}
+    ttl-seconds: ${JWT_TTL_SECONDS:3600}

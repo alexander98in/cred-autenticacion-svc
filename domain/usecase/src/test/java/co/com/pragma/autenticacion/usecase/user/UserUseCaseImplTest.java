@@ -88,7 +88,7 @@ public class UserUseCaseImplTest {
 
         StepVerifier.create(useCase.register(validUser))
                 .expectErrorMatches(throwable -> throwable instanceof ResourceAlreadyExistsException &&
-                        throwable.getMessage().contains("El número de documento"))
+                        throwable.getMessage().contains("El numero de documento"))
                 .verify();
     }
 
