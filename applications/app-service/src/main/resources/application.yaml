@@ -1,6 +1,16 @@
 server:
   port: ${SERVER_PORT_AUTH:8080}
+  forward-headers-strategy: framework
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
 spring:
+  webflux:
+    base-path: /auth
   application:
     name: ${APP_NAME_AUTH:cred-autenticacion-svc}
   devtools:
@@ -11,10 +21,9 @@ spring:
   profiles:
     include: ${SPRING_PROFILES_INCLUDE:}
   r2dbc:
-
     url: ${SPRING_R2DBC_URL}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:admin}
+    username: ${SPRING_R2DBC_USERNAME:postgres}
+    password: ${SPRING_R2DBC_PASSWORD:admin}
   sql.init.mode: "never"
   messages:
     basename: ${I18N_BASENAME_AUTH:i18n/validation-messages}
@@ -27,8 +36,8 @@ adapters:
     port: ${DB_PORT:5432}
     database: ${DB_NAME:pragma_credi}
     schema: ${DB_SCHEMA:public}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:admin}
+    username: ${SPRING_R2DBC_USERNAME:postgres}
+    password: ${SPRING_R2DBC_PASSWORD:admin}
 
 management:
   endpoints:
@@ -37,8 +46,10 @@ management:
         include: "health,prometheus"
   endpoint:
     health:
+      show-details: always
       probes:
         enabled: true
+
 cors:
   allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200,http://localhost:8080}
 

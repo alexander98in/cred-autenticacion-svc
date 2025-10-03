@@ -40,8 +40,10 @@ public class SecurityConfig {
                 .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
                 .authorizeExchange(ex -> ex
                         // publicos
+                        .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .pathMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
-                        .pathMatchers("/actuator/**", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
+                        .pathMatchers("/actuator/**").permitAll()
+                        .pathMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         // protegidos
                         // Protegidos (orden especifico → de mas especifico a mas general)
                         .pathMatchers(HttpMethod.POST, "/api/v1/usuarios").hasAuthority("ADMIN")
