@@ -1,5 +1,6 @@
 package co.com.pragma.autenticacion.usecase.user;
 
+import co.com.pragma.autenticacion.model.rol.gateways.RolRepository;
 import co.com.pragma.autenticacion.model.user.User;
 import co.com.pragma.autenticacion.model.user.UserConstraints;
 import co.com.pragma.autenticacion.model.user.gateways.PasswordHasher;
@@ -9,16 +10,19 @@ import co.com.pragma.autenticacion.usecase.exceptions.BusinessRuleViolationExcep
 import co.com.pragma.autenticacion.usecase.exceptions.ResourceAlreadyExistsException;
 import co.com.pragma.autenticacion.usecase.exceptions.ResourceNotFoundException;
 import co.com.pragma.autenticacion.usecase.utils.ErrorCodeDomain;
+import co.com.pragma.autenticacion.usecase.utils.RolName;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @RequiredArgsConstructor
 public class UserUseCaseImpl implements UserUseCase {
 
     private final UserRepository userRepository;
+    private final RolRepository rolRepository;
     private final PasswordHasher passwordHasher;
 
     @Override
@@ -86,5 +90,20 @@ public class UserUseCaseImpl implements UserUseCase {
                         ErrorCodeDomain.USER_NOT_FOUND.getCode(),
                         String.format(ErrorCodeDomain.USER_NOT_FOUND.getMessage(), "Email", email)
                 )));
+    }
+
+    @Override
+    public Mono<Integer> getTotalClients() {
+        return rolRepository.findRolByName(RolName.CLIENT.getValue())
+                .switchIfEmpty(Mono.error(new ResourceNotFoundException(
+                        ErrorCodeDomain.ROLE_NOT_FOUND.getCode(),
+                        String.format(ErrorCodeDomain.ROLE_NOT_FOUND.getMessage(), RolName.CLIENT.getValue())
+                )))
+                .flatMap(rolClient ->
+                        userRepository.findAllUsers()
+                                .filter(user -> Objects.equals(user.getIdRol(), rolClient.getIdRol()))
+                                .count()
+                                .map(Long::intValue)
+                );
     }
 }

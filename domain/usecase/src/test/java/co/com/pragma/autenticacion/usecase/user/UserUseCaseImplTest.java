@@ -1,6 +1,7 @@
 package co.com.pragma.autenticacion.usecase.user;
 
 
+import co.com.pragma.autenticacion.model.rol.gateways.RolRepository;
 import co.com.pragma.autenticacion.model.user.User;
 import co.com.pragma.autenticacion.model.user.gateways.PasswordHasher;
 import co.com.pragma.autenticacion.model.user.gateways.UserRepository;
@@ -33,6 +34,9 @@ public class UserUseCaseImplTest {
     @Mock
     private PasswordHasher passwordHasher;
 
+    @Mock
+    private RolRepository rolRepository;
+
     private UserUseCaseImpl useCase;
 
     private User validUser;
@@ -40,7 +44,7 @@ public class UserUseCaseImplTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        useCase = new UserUseCaseImpl(userRepository, passwordHasher);
+        useCase = new UserUseCaseImpl(userRepository, rolRepository, passwordHasher);
 
         validUser = User.builder()
                 .id(UUID.randomUUID())

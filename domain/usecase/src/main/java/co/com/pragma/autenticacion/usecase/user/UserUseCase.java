@@ -24,4 +24,6 @@ public interface UserUseCase {
 
     /** Consulta por email */
     Mono<User> getByEmail(String email);
+
+    Mono<Integer> getTotalClients();
 }

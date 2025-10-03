@@ -45,4 +45,10 @@ public class RolReactiveRepositoryAdapter extends ReactiveAdapterOperations<Rol,
         return repository.findByUserId(userId)
                 .map(this::toEntity);
     }
+
+    @Override
+    public Mono<Rol> findRolByName(String name) {
+        return repository.findByName(name)
+                .map(this::toEntity);
+    }
 }
